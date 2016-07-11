@@ -15,10 +15,10 @@ class TestBotoEngine(TestCase):
         assert not self.engine.is_attached_region('foobar')
 
     def test_attach_region(self):
-        assert not self.engine.is_attached_region('foobar')
-        self.engine.attach_region('foobar')
-        assert self.engine.is_attached_region('foobar')
-        self.engine.db.execute('DETACH DATABASE foobar')
+        assert not self.engine.is_attached_region('us_west_1')
+        self.engine.attach_region('us_west_1')
+        assert self.engine.is_attached_region('us_west_1')
+        self.engine.db.execute('DETACH DATABASE us_west_1')
 
     def test_get_resource_model_attributes(self):
         resource = boto3.resource('ec2')

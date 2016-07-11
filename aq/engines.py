@@ -6,11 +6,11 @@ import pprint
 import boto3
 from six import string_types
 
+from aq import logger, util
 from aq.errors import QueryError
-from aq.logger import get_logger
 from aq.sqlite_util import sqlite3, create_table, insert_all
 
-LOGGER = get_logger()
+LOGGER = logger.get_logger()
 
 
 class BotoSqliteEngine(object):
@@ -19,13 +19,18 @@ class BotoSqliteEngine(object):
         self.debug = options.get('--debug', False)
 
         self.boto3_session = boto3.Session()
-        self.default_region = self.boto3_session.region_name
+        # dash (-) is not allowed in database name so we use underscore (_) instead in region name
+        # throughout this module region name will *always* use underscore
+        self.default_region = self.boto3_session.region_name.replace('-', '_')
         self.db = self.init_db()
+        # attach the default region too
+        self.attach_region(self.default_region)
 
     def init_db(self):
-        ensure_data_dir_exists()
-        main_path = os.path.expanduser('~/.aq/{}.db'.format(self.default_region))
-        db = sqlite3.connect(main_path)
+        util.ensure_data_dir_exists()
+        db_path = '~/.aq/{}.db'.format(self.default_region)
+        absolute_path = os.path.expanduser(db_path)
+        db = sqlite3.connect(absolute_path)
         db.create_function('json_get', 2, json_get)
         return db
 
@@ -51,26 +56,24 @@ class BotoSqliteEngine(object):
         """
         Load resources as specified by given table into our db.
         """
-        region = table.database
-        if region == self.default_region:
-            # omit region if it is the default region
-            region = None
-
+        region = table.database if table.database else self.default_region
         resource_name, collection_name = table.table.split('_', 1)
-        resource = boto3.resource(resource_name, region_name=region)
+        # we use underscore "_" instead of dash "-" for region name but boto3 need dash
+        boto_region_name = region.replace('_', '-') if region else None
+        resource = boto3.resource(resource_name, region_name=boto_region_name)
         if not hasattr(resource, collection_name):
             raise QueryError(
                 'Unknown collection <{}> of resource <{}>'.format(collection_name, resource_name))
 
-        if region:
-            self.attach_region(region)
+        self.attach_region(region)
         self.refresh_table(region, table.table, resource, getattr(resource, collection_name))
 
     def attach_region(self, region):
         if not self.is_attached_region(region):
             LOGGER.info('Attaching new database for region: %s', region)
-            region_db_file_path = os.path.expanduser('~/.aq/{}.db'.format(region))
-            self.db.execute('ATTACH DATABASE ? AS ?', (region_db_file_path, region))
+            region_db_file_path = '~/.aq/{}.db'.format(region)
+            absolute_path = os.path.expanduser(region_db_file_path)
+            self.db.execute('ATTACH DATABASE ? AS ?', (absolute_path, region))
 
     def is_attached_region(self, region):
         databases = self.db.execute('PRAGMA database_list')
@@ -106,6 +109,13 @@ class ObjectProxy(object):
 
 
 def convert_tags_to_dict(item):
+    """
+    Convert AWS inconvenient tags model of a list of {"Key": <key>, "Value": <value>} pairs
+    to a dict of {<key>: <value>} for easier querying.
+
+    This returns a proxied object over given item to return a different tags format as the tags
+    attribute is read-only and we cannot modify it directly.
+    """
     if hasattr(item, 'tags'):
         tags = item.tags
         if isinstance(tags, list):
@@ -140,12 +150,6 @@ def get_columns_list(resource, collection):
 
 def get_resource_model(collection):
     return collection._model.resource.model
-
-
-def ensure_data_dir_exists():
-    data_dir = os.path.expanduser('~/.aq')
-    if not os.path.exists(data_dir):
-        os.mkdir(data_dir)
 
 
 def json_get(serialized_object, field):

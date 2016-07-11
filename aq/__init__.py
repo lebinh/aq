@@ -59,7 +59,7 @@ def main():
             except EOFError:
                 break
             except KeyboardInterrupt:
-                break
+                print('Interrupted!')
             except:
                 traceback.print_exc()
 

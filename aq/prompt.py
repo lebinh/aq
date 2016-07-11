@@ -9,11 +9,14 @@ from prompt_toolkit.history import FileHistory
 from prompt_toolkit.layout.lexers import PygmentsLexer
 from pygments.lexers.sql import SqlLexer
 
+from aq import util
+
 
 class AqPrompt(object):
     def __init__(self, options=None):
         self.options = options if options is not None else {}
-        history_file = os.path.expanduser('~/.aq_history')
+        util.ensure_data_dir_exists()
+        history_file = os.path.expanduser('~/.aq/history')
         self.history = FileHistory(history_file)
         self.lexer = PygmentsLexer(SqlLexer)
         self.completer = AqCompleter()
@@ -30,4 +33,3 @@ class AqPrompt(object):
 class AqCompleter(Completer):
     def get_completions(self, document, complete_event):
         yield Completion('SELECT', start_position=0)
-
