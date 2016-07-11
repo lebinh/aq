@@ -3,6 +3,7 @@
     json_field_access = expr -> (integer | string)
 [x] Query with region as database name
 [ ] REPL auto completion
+[ ] REPL multi-lines input
 [ ] Determine freshness of tables to avoid re-loading everytime
 [ ] Mechanism to inspect available tables
 [ ] Mechanism to inspect table schema

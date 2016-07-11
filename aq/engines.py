@@ -1,9 +1,9 @@
 import itertools
 import os.path
 import pprint
+import sqlite3
 
 import boto3
-import sqlite3
 
 from aq import logger, util, sqlite_util
 from aq.errors import QueryError
@@ -91,6 +91,17 @@ class BotoSqliteEngine(object):
     def is_fresh_enough(self, schema_name, table_name):
         # TODO
         return False
+
+    @property
+    def available_schemas(self):
+        # we want to return all regions if possible so ec2 is a good enough guess
+        regions = self.boto3_session.get_available_regions(service_name='ec2')
+        return [r.replace('-', '_') for r in regions]
+
+    @property
+    def available_tables(self):
+        resources = self.boto3_session.get_available_resources()
+        return ['{}_'.format(r) for r in resources]
 
 
 class ObjectProxy(object):

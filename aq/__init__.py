@@ -13,6 +13,7 @@ Options:
 from __future__ import print_function
 
 import traceback
+from collections import namedtuple
 
 from docopt import docopt
 
@@ -21,6 +22,8 @@ from aq.formatters import TableFormatter
 from aq.logger import initialize_logger
 from aq.parsers import SelectParser
 from aq.prompt import AqPrompt
+
+QueryResult = namedtuple('QueryResult', ('parsed_query', 'query_metadata', 'columns', 'rows'))
 
 
 def get_engine(options):
@@ -35,8 +38,8 @@ def get_formatter(options):
     return TableFormatter(options)
 
 
-def get_prompt(options):
-    return AqPrompt(options)
+def get_prompt(parser, engine, options):
+    return AqPrompt(parser, engine, options)
 
 
 def main():
@@ -49,17 +52,18 @@ def main():
 
     if args['<query>']:
         query = args['<query>']
-        execute_query(engine, formatter, parser, query)
+        res = execute_query(engine, formatter, parser, query)
+        print(formatter.format(res.columns, res.rows))
     else:
-        repl = get_prompt(args)
+        repl = get_prompt(parser, engine, args)
         while True:
             try:
                 query = repl.prompt()
-                execute_query(engine, formatter, parser, query)
+                res = execute_query(engine, formatter, parser, query)
+                print(formatter.format(res.columns, res.rows))
+                repl.update_with_result(res.query_metadata)
             except EOFError:
                 break
-            except KeyboardInterrupt:
-                print('Interrupted!')
             except:
                 traceback.print_exc()
 
@@ -67,4 +71,5 @@ def main():
 def execute_query(engine, formatter, parser, query):
     parsed_query, metadata = parser.parse_query(query)
     columns, rows = engine.execute(parsed_query, metadata)
-    print(formatter.format(columns, rows))
+    return QueryResult(parsed_query=parsed_query, query_metadata=metadata,
+                       columns=columns, rows=rows)
