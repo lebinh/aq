@@ -1,14 +1,12 @@
 import itertools
-import json
 import os.path
 import pprint
 
 import boto3
-from six import string_types
+import sqlite3
 
-from aq import logger, util
+from aq import logger, util, sqlite_util
 from aq.errors import QueryError
-from aq.sqlite_util import sqlite3, create_table, insert_all
 
 LOGGER = logger.get_logger()
 
@@ -30,9 +28,7 @@ class BotoSqliteEngine(object):
         util.ensure_data_dir_exists()
         db_path = '~/.aq/{}.db'.format(self.default_region)
         absolute_path = os.path.expanduser(db_path)
-        db = sqlite3.connect(absolute_path)
-        db.create_function('json_get', 2, json_get)
-        return db
+        return sqlite_util.connect(absolute_path)
 
     def execute(self, query, metadata):
         LOGGER.info('Executing query: %s', query)
@@ -86,11 +82,11 @@ class BotoSqliteEngine(object):
             columns = get_columns_list(resource, collection)
             LOGGER.info('Columns list: %s', columns)
             with self.db:
-                create_table(self.db, schema_name, table_name, columns)
+                sqlite_util.create_table(self.db, schema_name, table_name, columns)
                 items = collection.all()
                 # special treatment for tags field
                 items = [convert_tags_to_dict(item) for item in items]
-                insert_all(self.db, schema_name, table_name, columns, items)
+                sqlite_util.insert_all(self.db, schema_name, table_name, columns, items)
 
     def is_fresh_enough(self, schema_name, table_name):
         # TODO
@@ -150,32 +146,3 @@ def get_columns_list(resource, collection):
 
 def get_resource_model(collection):
     return collection._model.resource.model
-
-
-def json_get(serialized_object, field):
-    """
-    This emulates the HSTORE `->` get value operation.
-    It get value from JSON serialized column by given key and return `null` if not present.
-    Key can be either an integer for array index access or a string for object field access.
-
-    :return: JSON serialized value of key in object
-    """
-    # return null if serialized_object is null or "serialized null"
-    if serialized_object is None:
-        return "null"
-    obj = json.loads(serialized_object)
-    if obj is None:
-        return "null"
-
-    if isinstance(field, int):
-        # array index access
-        res = obj[field] if 0 <= field < len(obj) else None
-    else:
-        # object field access
-        res = obj.get(field)
-
-    if not isinstance(res, (int, float, string_types)):
-        res = json.dumps(res)
-
-    LOGGER.debug('json_get result: %s', res)
-    return res
