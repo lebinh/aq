@@ -1,0 +1,8 @@
+[x] Chaining of json_get operator '->'
+    i.e. foo -> bar -> blah = ((foo -> bar) -> blah) = json_get(json_get(foo, bar), blah)
+    json_field_access = expr -> (integer | string)
+[ ] query with region as database name
+[ ] REPL auto completion
+[ ] Mechanism to inspect available tables
+[ ] Mechanism to inspect table schema
+[ ] Better error msg on query parsing error (with viz of error position)
