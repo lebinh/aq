@@ -1,10 +1,19 @@
+TODO
+=====
+
 [x] Chaining of json_get operator '->'
     i.e. foo -> bar -> blah = ((foo -> bar) -> blah) = json_get(json_get(foo, bar), blah)
     json_field_access = expr -> (integer | string)
 [x] Query with region as database name
-[ ] REPL auto completion
-[ ] REPL multi-lines input
-[ ] Determine freshness of tables to avoid re-loading everytime
+[x] REPL auto completion
+[x] Determine freshness of tables to avoid re-loading everytime
 [ ] Mechanism to inspect available tables
 [ ] Mechanism to inspect table schema
+
+
+MAYBE WILL DO
+==============
+
+[ ] Constant, pre-loaded tables (e.g. ec2 instances pricing)
+[ ] REPL multi-lines input
 [ ] Better error msg on query parsing error (with viz of error position)
