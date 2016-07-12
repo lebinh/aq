@@ -4,7 +4,7 @@ import os
 
 from prompt_toolkit import prompt, AbortAction
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
-from prompt_toolkit.contrib.completers import WordCompleter
+from prompt_toolkit.completion import Completion, Completer
 from prompt_toolkit.history import FileHistory
 from prompt_toolkit.layout.lexers import PygmentsLexer
 from prompt_toolkit.validation import Validator, ValidationError
@@ -12,6 +12,9 @@ from pygments.lexers.sql import SqlLexer
 
 from aq import util
 from aq.errors import QueryParsingError
+from aq.logger import get_logger
+
+LOGGER = get_logger()
 
 
 class AqPrompt(object):
@@ -42,7 +45,7 @@ class AqPrompt(object):
         pass
 
 
-class AqCompleter(WordCompleter):
+class AqCompleter(Completer):
     keywords = '''UNION, ALL, AND, INTERSECT, EXCEPT, COLLATE, ASC, DESC, ON, USING,
         NATURAL, INNER, CROSS, LEFT, OUTER, JOIN, AS, INDEXED, NOT, SELECT, DISTINCT,
         FROM, WHERE, GROUP, BY, HAVING, ORDER, BY, LIMIT, OFFSET CAST, ISNULL, NOTNULL,
@@ -53,12 +56,31 @@ class AqCompleter(WordCompleter):
     functions = '''avg, count, max, min, sum, json_get'''.replace(',', '').split()
 
     def __init__(self, schemas=None, tables=None):
-        all_completions = set(self.keywords + self.functions)
-        schemas = schemas if schemas else []
-        all_completions.update(schemas)
-        tables = tables if tables else []
-        all_completions.update(tables)
-        super(AqCompleter, self).__init__(all_completions, ignore_case=True)
+        self.schemas = list(schemas) if schemas else []
+        self.tables = list(tables) if tables else []
+
+    def get_completions(self, document, complete_event):
+        start_of_current_word = document.find_start_of_previous_word(1)
+        current_word = document.text_before_cursor[start_of_current_word:].strip().lower()
+
+        start_of_previous_2_words = document.find_start_of_previous_word(2)
+        previous_word = document.text_before_cursor[
+                        start_of_previous_2_words:start_of_current_word].strip().lower()
+
+        if document.text_before_cursor[-1:].isspace():
+            previous_word = current_word
+            current_word = ''
+
+        if not previous_word:
+            candidates = ['SELECT']
+        elif current_word == ',' or previous_word in [',', 'from', 'join']:
+            candidates = self.tables + self.schemas
+        else:
+            candidates = self.keywords + self.functions + self.tables + self.schemas
+
+        for candidate in candidates:
+            if candidate.lower().startswith(current_word):
+                yield Completion(candidate, -len(current_word))
 
 
 class QueryValidator(Validator):

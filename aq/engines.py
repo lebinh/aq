@@ -6,6 +6,7 @@ import time
 from collections import defaultdict
 
 import boto3
+from boto3.resources.collection import CollectionManager
 
 from aq import logger, util, sqlite_util
 from aq.errors import QueryError
@@ -108,7 +109,11 @@ class BotoSqliteEngine(object):
     @property
     def available_tables(self):
         resources = self.boto3_session.get_available_resources()
-        return ['{}_'.format(r) for r in resources]
+        for resource_name in resources:
+            resource = self.boto3_session.resource(resource_name)
+            for attr in dir(resource):
+                if isinstance(getattr(resource, attr), CollectionManager):
+                    yield '{}_{}'.format(resource_name, attr)
 
 
 class ObjectProxy(object):
