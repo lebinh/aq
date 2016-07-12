@@ -7,6 +7,7 @@ Sample queries:
     aq 'select name from ec2_instances'
 
 Options:
+    --table-cache-ttl  number of seconds to cache the tables before update from AWS again
     --debug  enable debug mode
     -v, --verbose  enable verbose logging
 """

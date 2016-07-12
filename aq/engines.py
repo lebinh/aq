@@ -2,6 +2,8 @@ import itertools
 import os.path
 import pprint
 import sqlite3
+import time
+from collections import defaultdict
 
 import boto3
 
@@ -15,6 +17,9 @@ class BotoSqliteEngine(object):
     def __init__(self, options=None):
         self.options = options if options else {}
         self.debug = options.get('--debug', False)
+
+        self.table_cache_ttl = int(options.get('--table-cache-ttl', 300))
+        self.last_refresh_time = defaultdict(int)
 
         self.boto3_session = boto3.Session()
         # dash (-) is not allowed in database name so we use underscore (_) instead in region name
@@ -87,10 +92,12 @@ class BotoSqliteEngine(object):
                 # special treatment for tags field
                 items = [convert_tags_to_dict(item) for item in items]
                 sqlite_util.insert_all(self.db, schema_name, table_name, columns, items)
+                self.last_refresh_time[(schema_name, table_name)] = time.time()
 
     def is_fresh_enough(self, schema_name, table_name):
-        # TODO
-        return False
+        last_refresh = self.last_refresh_time[(schema_name, table_name)]
+        age = time.time() - last_refresh
+        return age < self.table_cache_ttl
 
     @property
     def available_schemas(self):
