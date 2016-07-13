@@ -1,6 +1,5 @@
-from collections import namedtuple
-
 import collections
+from collections import namedtuple
 
 from six import string_types
 
@@ -21,9 +20,6 @@ class SelectParser(object):
             parse_result = select_stmt.parseString(query, parseAll=True)
         except ParseException as e:
             raise QueryParsingError(e)
-
-        if not parse_result.table:
-            raise QueryParsingError('No table specified in query')
 
         tables = [parse_table_id(tid) for tid in parse_result.table_ids]
         parsed_query = concat(parse_result)
