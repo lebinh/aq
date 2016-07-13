@@ -9,7 +9,7 @@ def ensure_data_dir_exists():
         try:
             os.mkdir(data_dir)
         except OSError as e:
-            raise AQError('Cannot create data dir at "{}" because of: {}.'
+            raise AQError('Cannot create data dir at "{0}" because of: {1}.'
                           'aq need a working dir to store the temporary tables before querying.'
                           ''.format(data_dir, e))
 

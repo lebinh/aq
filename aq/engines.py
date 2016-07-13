@@ -40,7 +40,7 @@ class BotoSqliteEngine(object):
 
     def init_db(self):
         util.ensure_data_dir_exists()
-        db_path = '~/.aq/{}.db'.format(self.default_region)
+        db_path = '~/.aq/{0}.db'.format(self.default_region)
         absolute_path = os.path.expanduser(db_path)
         return sqlite_util.connect(absolute_path)
 
@@ -65,7 +65,7 @@ class BotoSqliteEngine(object):
         except NoCredentialsError:
             help_link = 'http://boto3.readthedocs.io/en/latest/guide/configuration.html'
             raise QueryError('Unable to locate AWS credential. '
-                             'Please see {} on how to configure AWS credential.'.format(help_link))
+                             'Please see {0} on how to configure AWS credential.'.format(help_link))
 
     def load_table(self, table):
         """
@@ -78,7 +78,7 @@ class BotoSqliteEngine(object):
         resource = boto3.resource(resource_name, region_name=boto_region_name)
         if not hasattr(resource, collection_name):
             raise QueryError(
-                'Unknown collection <{}> of resource <{}>'.format(collection_name, resource_name))
+                'Unknown collection <{0}> of resource <{1}>'.format(collection_name, resource_name))
 
         self.attach_region(region)
         self.refresh_table(region, table.table, resource, getattr(resource, collection_name))
@@ -86,7 +86,7 @@ class BotoSqliteEngine(object):
     def attach_region(self, region):
         if not self.is_attached_region(region):
             LOGGER.info('Attaching new database for region: %s', region)
-            region_db_file_path = '~/.aq/{}.db'.format(region)
+            region_db_file_path = '~/.aq/{0}.db'.format(region)
             absolute_path = os.path.expanduser(region_db_file_path)
             self.db.execute('ATTACH DATABASE ? AS ?', (absolute_path, region))
 
@@ -129,7 +129,7 @@ class BotoSqliteEngine(object):
         resource = self.boto3_session.resource(resource_name)
         for attr in dir(resource):
             if isinstance(getattr(resource, attr), CollectionManager):
-                yield '{}_{}'.format(resource_name, attr)
+                yield '{0}_{1}'.format(resource_name, attr)
 
 
 class ObjectProxy(object):

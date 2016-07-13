@@ -72,7 +72,7 @@ def main():
             except EOFError:
                 break
             except QueryError as e:
-                print('QueryError: {}'.format(e))
+                print('QueryError: {0}'.format(e))
             except:
                 traceback.print_exc()
 

@@ -21,8 +21,8 @@ def build_json_get_expr(terms):
     if len(terms) < 2:
         raise ValueError('Not enough terms')
     if len(terms) == 2:
-        return 'json_get({}, {})'.format(terms[0], terms[1])
-    return 'json_get({}, {})'.format(build_json_get_expr(terms[:-1]), terms[-1])
+        return 'json_get({0}, {1})'.format(terms[0], terms[1])
+    return 'json_get({0}, {1})'.format(build_json_get_expr(terms[:-1]), terms[-1])
 
 
 def replace_json_get(tokens):

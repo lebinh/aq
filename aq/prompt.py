@@ -109,5 +109,5 @@ class QueryValidator(Validator):
         try:
             self.parser.parse_query(document.text)
         except QueryParsingError as e:
-            raise ValidationError(message='Invalid SQL query. {}'.format(e),
+            raise ValidationError(message='Invalid SQL query. {0}'.format(e),
                                   cursor_position=document.cursor_position)

@@ -30,7 +30,7 @@ def json_serialize(obj):
     if hasattr(obj, 'name'):
         return jsonify(obj.name)
 
-    raise TypeError('{} is not JSON serializable'.format(obj))
+    raise TypeError('{0} is not JSON serializable'.format(obj))
 
 
 def json_get(serialized_object, field):
@@ -65,17 +65,17 @@ def create_table(db, schema_name, table_name, columns):
     """
     Create a table, schema_name.table_name, in given database with given list of column names.
     """
-    table = '{}.{}'.format(schema_name, table_name) if schema_name else table_name
-    db.execute('DROP TABLE IF EXISTS {}'.format(table))
+    table = '{0}.{1}'.format(schema_name, table_name) if schema_name else table_name
+    db.execute('DROP TABLE IF EXISTS {0}'.format(table))
     columns_list = ', '.join(columns)
-    db.execute('CREATE TABLE {} ({})'.format(table, columns_list))
+    db.execute('CREATE TABLE {0} ({1})'.format(table, columns_list))
 
 
 def insert_all(db, schema_name, table_name, columns, items):
     """
     Insert all item in given items list into the specified table, schema_name.table_name.
     """
-    table = '{}.{}'.format(schema_name, table_name) if schema_name else table_name
+    table = '{0}.{1}'.format(schema_name, table_name) if schema_name else table_name
     columns_list = ', '.join(columns)
     values_list = ', '.join(['?'] * len(columns))
     query = 'INSERT INTO {table} ({columns}) VALUES ({values})'.format(

@@ -1,6 +1,7 @@
 from unittest import TestCase
 
 import boto3
+from botocore.exceptions import NoRegionError
 
 from aq import BotoSqliteEngine
 from aq.engines import get_resource_model_attributes
@@ -21,9 +22,13 @@ class TestBotoEngine(TestCase):
         self.engine.db.execute('DETACH DATABASE us_west_1')
 
     def test_get_resource_model_attributes(self):
-        resource = boto3.resource('ec2')
-        collection = resource.instances.all()
-        attributes = get_resource_model_attributes(resource, collection)
-        assert attributes
-        assert 'instance_id' in attributes
-        assert 'image_id' in attributes
+        try:
+            resource = boto3.resource('ec2')
+        except NoRegionError:
+            pass
+        else:
+            collection = resource.instances.all()
+            attributes = get_resource_model_attributes(resource, collection)
+            assert attributes
+            assert 'instance_id' in attributes
+            assert 'image_id' in attributes
