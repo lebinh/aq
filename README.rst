@@ -5,10 +5,10 @@ aq - Query AWS resources with SQL
 `aq` allows you to query your AWS resources (EC2 instances, S3 buckets, etc.) with plain SQL.
 
 .. image:: https://asciinema.org/a/79468.png
-:target: https://asciinema.org/a/79468
+    :target: https://asciinema.org/a/79468
 
 *But why?*
-Fun, mostly fun. But see sample queries below for useful queries that can be performed with `aq`.
+Fun, mostly fun. But see sample queries below for useful queries that can be performed with ``aq``.
 
 Usage
 ~~~~~
@@ -23,7 +23,7 @@ Usage
                                      before we update them from AWS again [default: 300]
         -v, --verbose  enable verbose logging
 
-Running `aq` without specifying any query will start a REPL to run your queries interactively.
+Running ``aq`` without specifying any query will start a REPL to run your queries interactively.
 
 Sample queries
 ~~~~~~~~~~~~~~
@@ -84,14 +84,14 @@ Find instances that allows access to port 22 in their security groups
 Available tables
 ~~~~~~~~~~~~~~~~
 
-AWS resources are specified as table names in `<resource>_<collection>` format with:
+AWS resources are specified as table names in ``<resource>_<collection>`` format with:
 
  resource
     one of the `resources <https://boto3.readthedocs.io/en/latest/guide/resources.html>`_
-    defined in boto3: `ec2`, `s3`, `iam`, etc.
+    defined in boto3: ``ec2``, ``s3``, ``iam``, etc.
  collection
     one of the resource's `collections <https://boto3.readthedocs.io/en/latest/guide/collections.html>`_
-    defined in boto3: `instances`, `images`, etc.
+    defined in boto3: ``instances``, ``images``, etc.
 
 An optional schema (i.e. database) name can be used to specify the AWS region to query.
 If you don't specify the schema name then boto's default region will be used.
@@ -101,9 +101,9 @@ If you don't specify the schema name then boto's default region will be used.
     -- to count the number of ec2 instances in AWS Singapore region
     SELECT count(*) FROM ap_southeast_1.ec2_instances
 
-Note that the region name is specified using underscore (ap_southeast_1) instead of dash (ap-southeast-1).
+Note that the region name is specified using underscore (``ap_southeast_1``) instead of dash (``ap-southeast-1``).
 
-At the moment the full table list for AWS `us_east_1` region is
+At the moment the full table list for AWS ``us_east_1`` region is
 
 .. list-table::
 
@@ -148,9 +148,9 @@ Query with structured value
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Quite a number of resource contain structured value (e.g. instance tags) that cannot be use directly in SQL.
-We keep and present these values as JSON serialized string and add a new operator `->` to make querying on them easier.
-The `->` (replaced to `json_get` before execution) can be used to access an object field, `object->'fieldName'`, or access
-an array item, `array->index`::
+We keep and present these values as JSON serialized string and add a new operator ``->`` to make querying on them easier.
+The ``->`` (replaced to ``json_get`` before execution) can be used to access an object field, ``object->'fieldName'``, or access
+an array item, ``array->index``::
 
     > SELECT '{"foo": "bar"}' -> 'foo'
     +-------------------------------------+
