@@ -85,7 +85,7 @@ AWS Credential
 ~~~~~~~~~~~~~~
 
 ``aq`` relies on ``boto3`` for AWS API access so all the
-`credential configuration mechanisms<https://boto3.readthedocs.io/en/latest/guide/quickstart.html#configuration>`_
+`credential configuration mechanisms <https://boto3.readthedocs.io/en/latest/guide/quickstart.html#configuration>`_
 of boto3 will work. If you are using the AWS CLI then you can use ``aq`` without any further configurations.
 
 Available tables
