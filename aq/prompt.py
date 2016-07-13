@@ -88,13 +88,15 @@ class AqCompleter(Completer):
             return self.starters
 
         if current_word == ',' or previous_word in [',', 'from', 'join']:
-            # we delay the materialize of this lists until here for faster startup time
+            # we delay the materialize of table list until here for faster startup time
             if not isinstance(self.tables_and_schemas, list):
                 self.tables_and_schemas = list(self.tables_and_schemas)
             return self.tables_and_schemas
 
-        # we delay the materialize of this lists until here for faster startup time
         if not isinstance(self.all_completions, list):
+            # ensure we materialized the table list first
+            if not isinstance(self.tables_and_schemas, list):
+                self.tables_and_schemas = list(self.tables_and_schemas)
             self.all_completions = list(self.all_completions)
         return self.all_completions
 
