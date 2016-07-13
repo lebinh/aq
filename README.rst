@@ -4,6 +4,9 @@ aq - Query AWS resources with SQL
 
 `aq` allows you to query your AWS resources (EC2 instances, S3 buckets, etc.) with plain SQL.
 
+.. image:: https://asciinema.org/a/79468.png
+:target: https://asciinema.org/a/79468
+
 *But why?*
 Fun, mostly fun. But see sample queries below for useful queries that can be performed with `aq`.
 
