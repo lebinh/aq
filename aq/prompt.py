@@ -3,11 +3,12 @@ from __future__ import unicode_literals
 import itertools
 import os
 
-from prompt_toolkit import prompt, AbortAction
+from prompt_toolkit import AbortAction, CommandLineInterface
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from prompt_toolkit.completion import Completion, Completer
 from prompt_toolkit.history import FileHistory
 from prompt_toolkit.layout.lexers import PygmentsLexer
+from prompt_toolkit.shortcuts import create_prompt_application, create_eventloop
 from prompt_toolkit.validation import Validator, ValidationError
 from pygments.lexers.sql import SqlLexer
 
@@ -24,22 +25,22 @@ class AqPrompt(object):
         self.engine = engine
         self.options = options if options is not None else {}
         util.ensure_data_dir_exists()
-        history_file = os.path.expanduser('~/.aq/history')
-        self.history = FileHistory(history_file)
-        self.lexer = PygmentsLexer(SqlLexer)
-        self.completer = AqCompleter(schemas=engine.available_schemas,
-                                     tables=engine.available_tables)
-        self.auto_suggest = AutoSuggestFromHistory()
-        self.validator = QueryValidator(self.parser)
+        application = create_prompt_application(
+            message='> ',
+            lexer=PygmentsLexer(SqlLexer),
+            history=FileHistory(os.path.expanduser('~/.aq/history')),
+            completer=AqCompleter(schemas=engine.available_schemas, tables=engine.available_tables),
+            auto_suggest=AutoSuggestFromHistory(),
+            validator=QueryValidator(parser),
+            on_abort=AbortAction.RETRY,
+        )
+        loop = create_eventloop()
+        self.cli = CommandLineInterface(application=application, eventloop=loop)
+        self.patch_context = self.cli.patch_stdout_context()
 
     def prompt(self):
-        return prompt('> ',
-                      lexer=self.lexer,
-                      completer=self.completer,
-                      history=self.history,
-                      auto_suggest=self.auto_suggest,
-                      validator=self.validator,
-                      on_abort=AbortAction.RETRY)
+        with self.patch_context:
+            return self.cli.run(reset_current_buffer=True).text
 
     def update_with_result(self, query_metadata):
         # TODO
