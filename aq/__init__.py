@@ -1,15 +1,18 @@
-"""AWS Query
+"""aq - Query AWS resources with SQL
+
 Usage:
     aq [options]
     aq [options] <query>
 
 Sample queries:
-    aq 'select name from ec2_instances'
+    aq "select tags->'Name' from ec2_instances"
+    aq "select count(*) from us_west_1.ec2_instances"
 
 Options:
-    --table-cache-ttl  number of seconds to cache the tables before update from AWS again
-    --debug  enable debug mode
+    --table-cache-ttl=<seconds>  number of seconds to cache the tables
+                                 before we update them from AWS again [default: 300]
     -v, --verbose  enable verbose logging
+    --debug  enable debug mode
 """
 from __future__ import print_function
 

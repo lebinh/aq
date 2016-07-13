@@ -7,7 +7,7 @@ TODO
 [x] Query with region as database name
 [x] REPL auto completion
 [x] Determine freshness of tables to avoid re-loading everytime
-[ ] Mechanism to inspect available tables
+[x] Mechanism to inspect available tables [available via auto-complete]
 [ ] Mechanism to inspect table schema
 
 
