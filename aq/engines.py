@@ -4,6 +4,7 @@ import pprint
 import sqlite3
 import time
 from collections import defaultdict
+from multiprocessing.dummy import Pool
 
 import boto3
 from boto3.resources.collection import CollectionManager
@@ -109,11 +110,14 @@ class BotoSqliteEngine(object):
     @property
     def available_tables(self):
         resources = self.boto3_session.get_available_resources()
-        for resource_name in resources:
-            resource = self.boto3_session.resource(resource_name)
-            for attr in dir(resource):
-                if isinstance(getattr(resource, attr), CollectionManager):
-                    yield '{}_{}'.format(resource_name, attr)
+        tables = Pool(processes=len(resources)).map(self._get_table_names_for_resource, resources)
+        return itertools.chain.from_iterable(tables)
+
+    def _get_table_names_for_resource(self, resource_name):
+        resource = self.boto3_session.resource(resource_name)
+        for attr in dir(resource):
+            if isinstance(getattr(resource, attr), CollectionManager):
+                yield '{}_{}'.format(resource_name, attr)
 
 
 class ObjectProxy(object):

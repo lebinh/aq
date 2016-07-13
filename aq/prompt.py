@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 
+import itertools
 import os
 
 from prompt_toolkit import prompt, AbortAction
@@ -55,9 +56,14 @@ class AqCompleter(Completer):
 
     functions = '''avg, count, max, min, sum, json_get'''.replace(',', '').split()
 
+    starters = ['SELECT']
+
     def __init__(self, schemas=None, tables=None):
-        self.schemas = list(schemas) if schemas else []
-        self.tables = list(tables) if tables else []
+        self.schemas = schemas if schemas else []
+        self.tables = tables if tables else []
+        self.tables_and_schemas = itertools.chain(self.schemas, self.tables)
+        self.all_completions = itertools.chain(self.keywords, self.functions,
+                                               self.tables, self.schemas)
 
     def get_completions(self, document, complete_event):
         start_of_current_word = document.find_start_of_previous_word(1)
@@ -71,16 +77,25 @@ class AqCompleter(Completer):
             previous_word = current_word
             current_word = ''
 
-        if not previous_word:
-            candidates = ['SELECT']
-        elif current_word == ',' or previous_word in [',', 'from', 'join']:
-            candidates = self.tables + self.schemas
-        else:
-            candidates = self.keywords + self.functions + self.tables + self.schemas
-
+        candidates = self.get_completion_candidates(current_word, previous_word, document)
         for candidate in candidates:
             if candidate.lower().startswith(current_word):
                 yield Completion(candidate, -len(current_word))
+
+    def get_completion_candidates(self, current_word, previous_word, document):
+        # we delay the materialize of these lists until here for faster startup time
+        if not isinstance(self.tables_and_schemas, list):
+            self.tables_and_schemas = list(self.tables_and_schemas)
+        if not isinstance(self.all_completions, list):
+            self.all_completions = list(self.all_completions)
+
+        if not previous_word:
+            candidates = self.starters
+        elif current_word == ',' or previous_word in [',', 'from', 'join']:
+            candidates = self.tables_and_schemas
+        else:
+            candidates = self.all_completions
+        return candidates
 
 
 class QueryValidator(Validator):
