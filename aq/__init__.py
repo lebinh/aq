@@ -27,6 +27,8 @@ from aq.logger import initialize_logger
 from aq.parsers import SelectParser
 from aq.prompt import AqPrompt
 
+__version__ = '0.1.0'
+
 QueryResult = namedtuple('QueryResult', ('parsed_query', 'query_metadata', 'columns', 'rows'))
 
 
