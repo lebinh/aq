@@ -67,21 +67,21 @@ class TestSelectParser(TestCase):
 
     def test_parse_query_invalid(self):
         try:
-            self.parser.parse_query('select foo')
+            self.parser.parse_query('foo')
         except QueryParsingError:
             pass
         else:
             self.fail()
 
     def test_parse_query_expand_json_get(self):
-        query, _ = self.parser.parse_query("select foo->1 from bar")
-        self.assertEqual(query, 'SELECT json_get(foo, 1) FROM bar')
+        query, _ = self.parser.parse_query("select foo->1")
+        self.assertEqual(query, 'SELECT json_get(foo, 1)')
 
-        query, _ = self.parser.parse_query("select foo.bar -> 'blah' from foo")
-        self.assertEqual(query, "SELECT json_get(foo.bar, 'blah') FROM foo")
+        query, _ = self.parser.parse_query("select foo.bar -> 'blah'")
+        self.assertEqual(query, "SELECT json_get(foo.bar, 'blah')")
 
-        query, _ = self.parser.parse_query("select foo->bar->blah from foo")
-        self.assertEqual(query, 'SELECT json_get(json_get(foo, bar), blah) FROM foo')
+        query, _ = self.parser.parse_query("select foo->bar->blah")
+        self.assertEqual(query, 'SELECT json_get(json_get(foo, bar), blah)')
 
     def test_parse_query_expand_not_json_get(self):
         query, _ = self.parser.parse_query("select * from foo where x = 'bar -> 1'")

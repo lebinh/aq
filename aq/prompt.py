@@ -64,7 +64,7 @@ class AqCompleter(Completer):
         self.tables = tables if tables else []
         self.tables_and_schemas = itertools.chain(self.schemas, self.tables)
         self.all_completions = itertools.chain(self.keywords, self.functions,
-                                               self.tables, self.schemas)
+                                               self.tables_and_schemas)
 
     def get_completions(self, document, complete_event):
         start_of_current_word = document.find_start_of_previous_word(1)
@@ -84,19 +84,19 @@ class AqCompleter(Completer):
                 yield Completion(candidate, -len(current_word))
 
     def get_completion_candidates(self, current_word, previous_word, document):
-        # we delay the materialize of these lists until here for faster startup time
-        if not isinstance(self.tables_and_schemas, list):
-            self.tables_and_schemas = list(self.tables_and_schemas)
+        if not previous_word:
+            return self.starters
+
+        if current_word == ',' or previous_word in [',', 'from', 'join']:
+            # we delay the materialize of this lists until here for faster startup time
+            if not isinstance(self.tables_and_schemas, list):
+                self.tables_and_schemas = list(self.tables_and_schemas)
+            return self.tables_and_schemas
+
+        # we delay the materialize of this lists until here for faster startup time
         if not isinstance(self.all_completions, list):
             self.all_completions = list(self.all_completions)
-
-        if not previous_word:
-            candidates = self.starters
-        elif current_word == ',' or previous_word in [',', 'from', 'join']:
-            candidates = self.tables_and_schemas
-        else:
-            candidates = self.all_completions
-        return candidates
+        return self.all_completions
 
 
 class QueryValidator(Validator):
