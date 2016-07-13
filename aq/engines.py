@@ -8,9 +8,12 @@ from multiprocessing.dummy import Pool
 
 import boto3
 from boto3.resources.collection import CollectionManager
+from botocore.exceptions import NoCredentialsError
 
 from aq import logger, util, sqlite_util
 from aq.errors import QueryError
+
+DEFAULT_REGION = 'us_east_1'
 
 LOGGER = logger.get_logger()
 
@@ -26,7 +29,11 @@ class BotoSqliteEngine(object):
         self.boto3_session = boto3.Session()
         # dash (-) is not allowed in database name so we use underscore (_) instead in region name
         # throughout this module region name will *always* use underscore
-        self.default_region = self.boto3_session.region_name.replace('-', '_')
+        if self.boto3_session.region_name:
+            self.default_region = self.boto3_session.region_name.replace('-', '_')
+        else:
+            self.default_region = DEFAULT_REGION
+            self.boto3_session = boto3.Session(region_name=DEFAULT_REGION.replace('_', '-'))
         self.db = self.init_db()
         # attach the default region too
         self.attach_region(self.default_region)
@@ -52,8 +59,13 @@ class BotoSqliteEngine(object):
         """
         Load necessary resources tables into db to execute given query.
         """
-        for table in meta.tables:
-            self.load_table(table)
+        try:
+            for table in meta.tables:
+                self.load_table(table)
+        except NoCredentialsError:
+            help_link = 'http://boto3.readthedocs.io/en/latest/guide/configuration.html'
+            raise QueryError('Unable to locate AWS credential. '
+                             'Please see {} on how to configure AWS credential.'.format(help_link))
 
     def load_table(self, table):
         """
@@ -62,7 +74,7 @@ class BotoSqliteEngine(object):
         region = table.database if table.database else self.default_region
         resource_name, collection_name = table.table.split('_', 1)
         # we use underscore "_" instead of dash "-" for region name but boto3 need dash
-        boto_region_name = region.replace('_', '-') if region else None
+        boto_region_name = region.replace('_', '-')
         resource = boto3.resource(resource_name, region_name=boto_region_name)
         if not hasattr(resource, collection_name):
             raise QueryError(

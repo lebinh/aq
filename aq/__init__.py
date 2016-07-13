@@ -22,12 +22,13 @@ from collections import namedtuple
 from docopt import docopt
 
 from aq.engines import BotoSqliteEngine
+from aq.errors import QueryError
 from aq.formatters import TableFormatter
 from aq.logger import initialize_logger
 from aq.parsers import SelectParser
 from aq.prompt import AqPrompt
 
-__version__ = '0.1.0'
+__version__ = '0.1.1'
 
 QueryResult = namedtuple('QueryResult', ('parsed_query', 'query_metadata', 'columns', 'rows'))
 
@@ -70,6 +71,8 @@ def main():
                 repl.update_with_result(res.query_metadata)
             except EOFError:
                 break
+            except QueryError as e:
+                print('QueryError: {}'.format(e))
             except:
                 traceback.print_exc()
 
