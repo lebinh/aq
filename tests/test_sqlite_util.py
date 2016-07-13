@@ -32,27 +32,27 @@ class TestSqliteUtil(TestCase):
             create_table(conn, None, 'foo', columns)
             insert_all(conn, None, 'foo', columns, values)
             rows = conn.execute('SELECT * FROM foo').fetchall()
-            self.assertIn((1, 2), rows)
-            self.assertIn((3, 4), rows)
+            self.assertTrue((1, 2) in rows, '(1, 2) in rows')
+            self.assertTrue((3, 4) in rows, '(3, 4) in rows')
 
     def test_json_get_field(self):
         with connect(':memory:') as conn:
             json_obj = '{"foo": "bar"}'
-            query = "select json_get('{}', 'foo')".format(json_obj)
+            query = "select json_get('{0}', 'foo')".format(json_obj)
             self.assertEqual(conn.execute(query).fetchone()[0], 'bar')
 
     def test_json_get_index(self):
         with connect(':memory:') as conn:
             json_obj = '[1, 2, 3]'
-            query = "select json_get('{}', 1)".format(json_obj)
+            query = "select json_get('{0}', 1)".format(json_obj)
             self.assertEqual(conn.execute(query).fetchone()[0], 2)
 
     def test_json_get_field_nested(self):
         with connect(':memory:') as conn:
             json_obj = '{"foo": {"bar": "blah"}}'
-            query = "select json_get('{}', 'foo')".format(json_obj)
+            query = "select json_get('{0}', 'foo')".format(json_obj)
             self.assertEqual(conn.execute(query).fetchone()[0], '{"bar": "blah"}')
-            query = "select json_get(json_get('{}', 'foo'), 'bar')".format(json_obj)
+            query = "select json_get(json_get('{0}', 'foo'), 'bar')".format(json_obj)
             self.assertEqual(conn.execute(query).fetchone()[0], 'blah')
 
     def test_json_get_field_of_null(self):
@@ -63,5 +63,5 @@ class TestSqliteUtil(TestCase):
     def test_json_get_field_of_serialized_null(self):
         with connect(':memory:') as conn:
             json_obj = 'null'
-            query = "select json_get('{}', 'foo')".format(json_obj)
+            query = "select json_get('{0}', 'foo')".format(json_obj)
             self.assertEqual(conn.execute(query).fetchone()[0], None)

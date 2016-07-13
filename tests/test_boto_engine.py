@@ -25,6 +25,7 @@ class TestBotoEngine(TestCase):
         try:
             resource = boto3.resource('ec2')
         except NoRegionError:
+            # skip for environment that doesn't have boto config like CI
             pass
         else:
             collection = resource.instances.all()
