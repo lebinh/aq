@@ -89,3 +89,11 @@ class TestSelectParser(TestCase):
 
         query, _ = self.parser.parse_query("select * from foo where x -> 'bar -> 1'")
         self.assertEqual(query, "SELECT * FROM foo WHERE json_get(x, 'bar -> 1')")
+
+    def test_parse_query_with_and(self):
+        query, _ = self.parser.parse_query("select * from foo where x = 'foo' and y = 'bar'")
+        self.assertEqual(query, "SELECT * FROM foo WHERE x = 'foo' AND y = 'bar'")
+
+    def test_parse_query_with_or(self):
+        query, _ = self.parser.parse_query("select * from foo where x = 'foo' or y = 'bar'")
+        self.assertEqual(query, "SELECT * FROM foo WHERE x = 'foo' OR y = 'bar'")

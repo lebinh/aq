@@ -33,9 +33,9 @@ def replace_json_get(tokens):
 # keywords
 (UNION, ALL, AND, INTERSECT, EXCEPT, COLLATE, ASC, DESC, ON, USING, NATURAL, INNER,
  CROSS, LEFT, OUTER, JOIN, AS, INDEXED, NOT, SELECT, DISTINCT, FROM, WHERE, GROUP, BY,
- HAVING, ORDER, BY, LIMIT, OFFSET) = map(CaselessKeyword, """UNION, ALL, AND, INTERSECT,
+ HAVING, ORDER, BY, LIMIT, OFFSET, OR) = map(CaselessKeyword, """UNION, ALL, AND, INTERSECT,
  EXCEPT, COLLATE, ASC, DESC, ON, USING, NATURAL, INNER, CROSS, LEFT, OUTER, JOIN, AS, INDEXED,
- NOT, SELECT, DISTINCT, FROM, WHERE, GROUP, BY, HAVING, ORDER, BY, LIMIT, OFFSET
+ NOT, SELECT, DISTINCT, FROM, WHERE, GROUP, BY, HAVING, ORDER, BY, LIMIT, OFFSET, OR
  """.replace(",", "").split())
 
 (CAST, ISNULL, NOTNULL, NULL, IS, BETWEEN, ELSE, END, CASE, WHEN, THEN, EXISTS,
@@ -108,6 +108,8 @@ expr << operatorPrecedence(expr_term,
                                    oneOf('= == != <>') | IS | IN | LIKE | GLOB | MATCH | REGEXP,
                                    BINARY,
                                    opAssoc.LEFT),
+                               (AND, BINARY, opAssoc.LEFT),
+                               (OR, BINARY, opAssoc.LEFT),
                                ((BETWEEN, AND), TERNARY, opAssoc.LEFT),
                            ])
 
