@@ -24,10 +24,10 @@ class TestCommandLineArg(TestCase):
         os.environ['AWS_SHARED_CREDENTIALS_FILE'] = self.credential_file.name
         self.credential_file.write(
             b'[profile_env]\n'
-            'region=region-profile-env\n'
-            '\n'
-            '[profile_arg]\n'
-            'region=region-profile-arg\n'
+            b'region=region-profile-env\n'
+            b'\n'
+            b'[profile_arg]\n'
+            b'region=region-profile-arg\n'
         )
         self.credential_file.flush()
 
@@ -35,10 +35,10 @@ class TestCommandLineArg(TestCase):
         os.environ['AWS_CONFIG_FILE'] = self.config_file.name
         self.config_file.write(
             b'[default]\n'
-            'region=region-config-default\n'
-            '\n'
-            '[config_env]\n'
-            'region=region-config-env\n'
+            b'region=region-config-default\n'
+            b'\n'
+            b'[config_env]\n'
+            b'region=region-config-env\n'
         )
         self.config_file.flush()
 
