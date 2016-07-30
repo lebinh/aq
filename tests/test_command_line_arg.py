@@ -23,7 +23,7 @@ class TestCommandLineArg(TestCase):
         self.credential_file = tempfile.NamedTemporaryFile()
         os.environ['AWS_SHARED_CREDENTIALS_FILE'] = self.credential_file.name
         self.credential_file.write(
-            '[profile_env]\n'
+            b'[profile_env]\n'
             'region=region-profile-env\n'
             '\n'
             '[profile_arg]\n'
@@ -34,7 +34,7 @@ class TestCommandLineArg(TestCase):
         self.config_file = tempfile.NamedTemporaryFile()
         os.environ['AWS_CONFIG_FILE'] = self.config_file.name
         self.config_file.write(
-            '[default]\n'
+            b'[default]\n'
             'region=region-config-default\n'
             '\n'
             '[config_env]\n'
