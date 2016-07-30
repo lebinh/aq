@@ -23,17 +23,22 @@ class BotoSqliteEngine(object):
         self.options = options if options else {}
         self.debug = options.get('--debug', False)
 
+        self.profile = options.get('--profile', None)
+        self.region = options.get('--region', None)
         self.table_cache_ttl = int(options.get('--table-cache-ttl', 300))
         self.last_refresh_time = defaultdict(int)
 
-        self.boto3_session = boto3.Session()
+        self.boto3_session = boto3.Session(profile_name=self.profile)
         # dash (-) is not allowed in database name so we use underscore (_) instead in region name
         # throughout this module region name will *always* use underscore
-        if self.boto3_session.region_name:
+        if self.region:
+            self.default_region = self.region.replace('-', '_')
+        elif self.boto3_session.region_name and self.region is None:
             self.default_region = self.boto3_session.region_name.replace('-', '_')
         else:
             self.default_region = DEFAULT_REGION
-            self.boto3_session = boto3.Session(region_name=DEFAULT_REGION.replace('_', '-'))
+
+        self.boto3_session = boto3.Session(profile_name=self.profile, region_name=self.default_region.replace('_', '-'))
         self.db = self.init_db()
         # attach the default region too
         self.attach_region(self.default_region)
@@ -75,7 +80,7 @@ class BotoSqliteEngine(object):
         resource_name, collection_name = table.table.split('_', 1)
         # we use underscore "_" instead of dash "-" for region name but boto3 need dash
         boto_region_name = region.replace('_', '-')
-        resource = boto3.resource(resource_name, region_name=boto_region_name)
+        resource = self.boto3_session.resource(resource_name, region_name=boto_region_name)
         if not hasattr(resource, collection_name):
             raise QueryError(
                 'Unknown collection <{0}> of resource <{1}>'.format(collection_name, resource_name))
