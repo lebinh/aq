@@ -57,7 +57,6 @@ class TestCommandLineArg(TestCase):
         engine = BotoSqliteEngine({ '--region': 'region-arg' })
 
         eq_(engine.boto3_session.region_name, 'region-arg')
-        eq_(engine.default_region, 'region_arg')
 
     def test_command_line_arg_none(self):
         os.environ['AWS_PROFILE'] = 'profile_env'
@@ -67,7 +66,6 @@ class TestCommandLineArg(TestCase):
 
         eq_(engine.boto3_session.profile_name, 'profile_env')
         eq_(engine.boto3_session.region_name, 'region-env')
-        eq_(engine.default_region, 'region_env')
 
     def test_command_line_arg_and_env_file_none(self):
         del os.environ['AWS_CONFIG_FILE']
@@ -77,4 +75,3 @@ class TestCommandLineArg(TestCase):
 
         eq_(engine.boto3_session.profile_name, 'default')
         eq_(engine.boto3_session.region_name, 'us-east-1')
-        eq_(engine.default_region, 'us_east_1')

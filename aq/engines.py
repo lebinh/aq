@@ -33,7 +33,7 @@ class BotoSqliteEngine(object):
         # throughout this module region name will *always* use underscore
         if self.region:
             self.default_region = self.region.replace('-', '_')
-        elif self.boto3_session.region_name:
+        elif self.boto3_session.region_name and self.region is None:
             self.default_region = self.boto3_session.region_name.replace('-', '_')
         else:
             self.default_region = DEFAULT_REGION
