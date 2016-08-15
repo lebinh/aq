@@ -19,10 +19,12 @@ Usage
 ::
 
     Usage:
-        aq [options]
-        aq [options] <query>
+        aq [--profile=<profile>] [--region=<region>] [--table-cache-ttl=<seconds>] [-v] [--debug]
+        aq [--profile=<profile>] [--region=<region>] [--table-cache-ttl=<seconds>] [-v] [--debug] <query>
 
     Options:
+        --profile=<profile>  Use a specific profile from your credential file
+        --region=<region>  The region to use. Overrides config/env settings
         --table-cache-ttl=<seconds>  number of seconds to cache the tables
                                      before we update them from AWS again [default: 300]
         -v, --verbose  enable verbose logging
